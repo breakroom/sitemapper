@@ -1,11 +1,10 @@
-# Sitemapex
+# Sitemapper
 
-**TODO: Add description**
+Sitemapper is an Elixir library for generating Sitemaps ((more about Sitemaps)[https://www.sitemaps.org]).
+
+It's designed for generating large sitemaps while maintaining a low memory profile. It can persist sitemaps in Amazon S3, on disk, or any adapter you wish to write.
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `sitemapex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +14,49 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/sitemapex](https://hexdocs.pm/sitemapex).
+## Usage
 
+```elixir
+  def generate_sitemap() do
+    config = [
+      store: Sitemapper.S3Store,
+      store_config: [bucket: "example-bucket"],
+      sitemap_url: "https://example-bucket.awes.com/"
+    ]
+
+    Stream.concat([1..100_001])
+    |> Stream.map(fn i ->
+      %Sitemapper.URL{
+        loc: "http://example.com/page-#{i}",
+        changefreq: :daily,
+        lastmod: Date.utc_today()
+      }
+    end)
+    |> Sitemapper.generate(config)
+  end
+```
+
+`Sitemapper.generate` receives a `Stream` of URLs. This makes it easy to stream the contents of an Ecto Repo into a sitemap.
+
+```elixir
+  def generate_sitemap() do
+    config = [
+      store: Sitemapper.S3Store,
+      store_config: [bucket: "example-bucket"],
+      sitemap_url: "http://example-bucket.s3-aws-region.amazonaws.com"
+    ]
+
+    Repo.transaction(fn ->
+      User
+      |> Repo.stream()
+      |> Stream.map(fn %User{username: username, updated_at: updated_at} ->
+        %Sitemapper.URL{
+          loc: "http://example.com/users/#{username}",
+          changefreq: :hourly,
+          lastmod: updated_at
+        }
+      end)
+      |> Sitemapper.generate(config)
+    end)
+  end
+```
