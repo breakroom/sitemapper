@@ -60,7 +60,7 @@ defmodule Sitemapper do
 
   defp sitemap_filename(counter) do
     str = Integer.to_string(counter)
-    "sitemap-" <> String.pad_leading(str, 6, "0") <> ".xml.gz"
+    "sitemap-" <> String.pad_leading(str, 5, "0") <> ".xml.gz"
   end
 
   defp reduce_filename_to_index(:end, nil) do
