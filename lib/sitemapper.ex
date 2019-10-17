@@ -1,19 +1,23 @@
 defmodule Sitemapper do
   alias Sitemapper.{File, IndexGenerator, SitemapGenerator, SitemapReference}
 
-  def generate(enum) do
+  def generate(enum, config) do
+    store = Keyword.fetch!(config, :store)
+    store_config = Keyword.fetch!(config, :store_config)
+    sitemap_url = Keyword.fetch!(config, :sitemap_url)
+
     enum
     |> Stream.concat([:end])
     |> Stream.transform(nil, &reduce_url_to_sitemap/2)
     |> Stream.transform(1, &reduce_file_to_data_and_name/2)
     |> Stream.map(&gzip_body/1)
-    |> Stream.map(&persist_returning_filename/1)
-    |> Stream.map(&map_filename_to_sitemap_reference/1)
+    |> Stream.map(&persist_returning_filename(&1, store, store_config))
+    |> Stream.map(&map_filename_to_sitemap_reference(&1, sitemap_url))
     |> Stream.concat([:end])
     |> Stream.transform(nil, &reduce_filename_to_index/2)
     |> Stream.map(&map_index_file_to_data_and_name/1)
     |> Stream.map(&gzip_body/1)
-    |> Stream.map(&persist_returning_filename/1)
+    |> Stream.map(&persist_returning_filename(&1, store, store_config))
     |> Stream.run()
   end
 
@@ -49,9 +53,8 @@ defmodule Sitemapper do
     {:zlib.gzip(body), filename}
   end
 
-  defp persist_returning_filename({body, filename}) do
-    store_module = Application.fetch_env!(:sitemapper, :store)
-    :ok = store_module.write(filename, body)
+  defp persist_returning_filename({body, filename}, store, store_config) do
+    :ok = store.write(filename, body, store_config)
     filename
   end
 
@@ -84,11 +87,24 @@ defmodule Sitemapper do
   end
 
   defp map_index_file_to_data_and_name(%File{body: body}) do
-    {body, "sitemap-index.xml.gz"}
+    {body, "sitemap.xml.gz"}
   end
 
-  defp map_filename_to_sitemap_reference(filename) do
-    url = Application.fetch_env!(:sitemapper, :url)
-    %SitemapReference{loc: "#{url}#{filename}"}
+  defp map_filename_to_sitemap_reference(filename, sitemap_url) do
+    loc =
+      URI.parse(sitemap_url)
+      |> join_uri_and_filename(filename)
+      |> URI.to_string()
+
+    %SitemapReference{loc: loc}
+  end
+
+  defp join_uri_and_filename(%URI{path: nil} = uri, filename) do
+    URI.merge(uri, filename)
+  end
+
+  defp join_uri_and_filename(%URI{path: path} = uri, filename) do
+    path = Path.join(path, filename)
+    URI.merge(uri, path)
   end
 end

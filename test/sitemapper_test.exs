@@ -4,18 +4,21 @@ defmodule SitemapperTest do
 
   alias Sitemapper.URL
 
-  setup_all do
-    Application.put_env(:sitemapper, :store, Sitemapper.TestStore)
-    Application.put_env(:sitemapper, :url, "http://example.org/")
-  end
-
   test "generate with 50,001 URLs" do
+    path = File.cwd!() |> Path.join("test/store")
+
+    config = [
+      store: Sitemapper.TestStore,
+      store_config: [path: path],
+      sitemap_url: "http://example.org/foo"
+    ]
+
     response =
       Stream.concat([1..50_002])
       |> Stream.map(fn i ->
         %URL{loc: "http://example.com/#{i}"}
       end)
-      |> Sitemapper.generate()
+      |> Sitemapper.generate(config)
 
     assert response == :ok
   end
