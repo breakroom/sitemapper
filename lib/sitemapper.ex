@@ -56,7 +56,10 @@ defmodule Sitemapper do
 
   def ping(opts) do
     sitemap_url = Keyword.fetch!(opts, :sitemap_url)
-    index_url = URI.parse(sitemap_url) |> join_uri_and_filename("sitemap.xml.gz")
+
+    index_url =
+      URI.parse(sitemap_url) |> join_uri_and_filename("sitemap.xml.gz") |> URI.to_string()
+
     Sitemapper.Pinger.ping(index_url)
   end
 
