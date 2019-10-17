@@ -34,6 +34,7 @@ end
     end)
     |> Sitemapper.generate(config)
     |> Sitemapper.persist(config)
+    |> Sitemapper.ping(config)
   end
 ```
 
@@ -58,6 +59,8 @@ end
         }
       end)
       |> Sitemapper.generate(config)
+      |> Sitemapper.persist(config)
+      |> Sitemapper.ping(config)
     end)
   end
 ```

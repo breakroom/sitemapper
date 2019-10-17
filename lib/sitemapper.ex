@@ -10,7 +10,8 @@ defmodule Sitemapper do
 
   @doc """
   Receives a `Stream` of `Sitemapper.URL` and returns a `Stream` of
-  `{filename, body}` tuples.
+  `{filename, body}` tuples, representing the individual sitemap XML
+  files, followed by an index XML file.
 
   Accepts the following `Keyword` options in `opts`:
 
@@ -32,8 +33,10 @@ defmodule Sitemapper do
   end
 
   @doc """
-  Receive a `Stream` of `{filename, body}` tuples, and persists those
-  to the `Sitemapper.Store`. Will raise if persistence fails.
+  Receives a `Stream` of `{filename, body}` tuples, and persists
+  those to the `Sitemapper.Store`.
+
+  Will raise if persistence fails.
 
   Accepts the following `Keyword` options in `opts`:
 
@@ -54,13 +57,24 @@ defmodule Sitemapper do
     end)
   end
 
-  def ping(opts) do
+  @doc """
+  Receives a `Stream` of `{filename, body}` tuples, takes the last
+  one (the index file), and pings Google and Bing with its URL.
+  """
+  @spec ping(Enumerable.t(), keyword) :: Stream.t()
+  def ping(enum, opts) do
     sitemap_url = Keyword.fetch!(opts, :sitemap_url)
 
-    index_url =
-      URI.parse(sitemap_url) |> join_uri_and_filename("sitemap.xml.gz") |> URI.to_string()
+    enum
+    |> Stream.take(-1)
+    |> Stream.map(fn {filename, _body} ->
+      index_url =
+        URI.parse(sitemap_url)
+        |> join_uri_and_filename(filename)
+        |> URI.to_string()
 
-    Sitemapper.Pinger.ping(index_url)
+      Sitemapper.Pinger.ping(index_url)
+    end)
   end
 
   defp reduce_url_to_sitemap(:end, nil) do
