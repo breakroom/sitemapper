@@ -9,7 +9,7 @@ It's designed to generate large sitemaps while maintaining a low memory profile.
 ```elixir
 def deps do
   [
-    {:sitemapex, "~> 0.1.0"}
+    {:sitemapper, "~> 0.1.0"}
   ]
 end
 ```
