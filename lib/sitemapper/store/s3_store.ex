@@ -6,10 +6,13 @@ defmodule Sitemapper.S3Store do
 
     props = [
       {:content_type, "application/x-gzip"},
-      {:cache_control, "must-revalidate"}
+      {:cache_control, "must-revalidate"},
+      {:acl, :public_read}
     ]
 
     ExAws.S3.put_object(bucket, filename, body, props)
     |> ExAws.request!()
+
+    :ok
   end
 end
