@@ -6,10 +6,13 @@ defmodule Sitemapper.MixProject do
       app: :sitemapper,
       version: "0.1.0",
       elixir: "~> 1.8",
-      start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Sitemapper",
-      source_url: "https://github.com/tomtaylor/sitemapper"
+      licenses: ["MIT"],
+      source_url: "https://github.com/tomtaylor/sitemapper",
+      description: "Stream based XML Sitemap generator",
+      links: %{"GitHub" => "https://github.com/tomtaylor/sitemapper"},
+      maintainers: ["Tom Taylor"]
     ]
   end
 
