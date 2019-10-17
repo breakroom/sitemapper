@@ -1,4 +1,4 @@
-defmodule Sitemapper.TestStore do
+defmodule Sitemapper.FileStore do
   @behaviour Sitemapper.Store
 
   def write(filename, data, config) do
