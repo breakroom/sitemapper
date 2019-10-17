@@ -21,7 +21,7 @@ end
     config = [
       store: Sitemapper.S3Store,
       store_config: [bucket: "example-bucket"],
-      sitemap_url: "https://example-bucket.awes.com/"
+      sitemap_url: "http://example-bucket.s3-aws-region.amazonaws.com"
     ]
 
     Stream.concat([1..100_001])
