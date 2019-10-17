@@ -33,6 +33,7 @@ end
       }
     end)
     |> Sitemapper.generate(config)
+    |> Sitemapper.persist(config)
   end
 ```
 

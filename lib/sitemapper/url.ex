@@ -1,4 +1,7 @@
 defmodule Sitemapper.URL do
+  @moduledoc """
+  Represents a URL for inclusion in a Sitemap.
+  """
   @enforce_keys [:loc]
   defstruct [:loc, :lastmod, :changefreq, :priority]
 
