@@ -22,7 +22,7 @@ defmodule SitemapperTest do
     ]
 
     elements =
-      Stream.concat([1..50_001])
+      Stream.concat([1..50_000])
       |> Stream.map(fn i ->
         %URL{loc: "http://example.com/#{i}"}
       end)
@@ -39,7 +39,7 @@ defmodule SitemapperTest do
     ]
 
     elements =
-      Stream.concat([1..50_002])
+      Stream.concat([1..50_001])
       |> Stream.map(fn i ->
         %URL{loc: "http://example.com/#{i}"}
       end)
@@ -49,5 +49,25 @@ defmodule SitemapperTest do
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml.gz"
     assert Enum.at(elements, 1) |> elem(0) == "sitemap-00002.xml.gz"
     assert Enum.at(elements, 2) |> elem(0) == "sitemap.xml.gz"
+  end
+
+  test "generate and persist" do
+    opts = [
+      sitemap_url: "http://example.org/foo",
+      store: Sitemapper.FileStore,
+      store_config: [
+        path: File.cwd!() |> Path.join("test/store")
+      ]
+    ]
+
+    elements =
+      Stream.concat([1..50_002])
+      |> Stream.map(fn i ->
+        %URL{loc: "http://example.com/#{i}"}
+      end)
+      |> Sitemapper.generate(opts)
+      |> Sitemapper.persist(opts)
+
+    assert Enum.count(elements) == 3
   end
 end

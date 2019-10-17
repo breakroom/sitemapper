@@ -77,7 +77,8 @@ defmodule Sitemapper do
     case SitemapGenerator.add_url(progress, url) do
       {:error, reason} when reason in [:over_length, :over_count] ->
         done = SitemapGenerator.finalize(progress)
-        {[done], nil}
+        next = SitemapGenerator.new() |> SitemapGenerator.add_url(url)
+        {[done], next}
 
       new_progress ->
         {[], new_progress}
