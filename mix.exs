@@ -21,7 +21,8 @@ defmodule Sitemapper.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xml_builder, "~> 2.1.1"}
+      {:xml_builder, "~> 2.1.1"},
+      {:ex_aws_s3, "~> 2.0", optional: true}
     ]
   end
 end
