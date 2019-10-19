@@ -24,3 +24,7 @@ sitemapper-*.tar
 
 .elixir_ls
 test/store
+
+benchmarks
+bench/fast_sitemap
+bench/sitemapper
