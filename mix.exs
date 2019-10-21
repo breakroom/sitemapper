@@ -1,16 +1,19 @@
 defmodule Sitemapper.MixProject do
   use Mix.Project
 
+  @version "0.2.0"
+
   def project do
     [
       app: :sitemapper,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.8",
       deps: deps(),
       name: "Sitemapper",
       source_url: "https://github.com/tomtaylor/sitemapper",
       description: "Stream based XML Sitemap generator",
-      package: package()
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -19,6 +22,12 @@ defmodule Sitemapper.MixProject do
       licenses: ["MIT"],
       maintainers: ["Tom Taylor"],
       links: %{"GitHub" => "https://github.com/tomtaylor/sitemapper"}
+    ]
+  end
+
+  defp docs do
+    [
+      source_ref: "v#{@version}"
     ]
   end
 
