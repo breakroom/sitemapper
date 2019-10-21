@@ -1,17 +1,7 @@
 defmodule Sitemapper.Encoder do
-  def encode(%Date{} = date) do
+  def encode(%dt{} = date) when dt in [Date, DateTime, NaiveDateTime] do
     date
-    |> Date.to_iso8601()
-  end
-
-  def encode(%DateTime{} = dt) do
-    dt
-    |> DateTime.to_iso8601()
-  end
-
-  def encode(%NaiveDateTime{} = dt) do
-    dt
-    |> NaiveDateTime.to_iso8601()
+    |> dt.to_iso8601()
   end
 
   def encode(v), do: v
