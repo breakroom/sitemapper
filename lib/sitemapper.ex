@@ -15,21 +15,27 @@ defmodule Sitemapper do
 
   Accepts the following `Keyword` options in `opts`:
 
-  * `sitemap_url`: (required) The base URL where the generated sitemap files will
-    live. e.g. `http://example.org`, if your sitemap lives at
-    `http://example.org/sitemap.xml`
+  * `sitemap_url` - The base URL where the generated sitemap
+    files will live. e.g. `http://example.org`, if your sitemap lives at
+    `http://example.org/sitemap.xml` (required)
+  * `gzip` - Sets whether the files are gzipped (default: `true`)
+  * `name` - An optional suffix for the sitemap filename. e.g. If you
+     set to `news`, will produce `sitemap-news.xml.gz` and
+     `sitemap-news-00001.xml.gz` filenames. (default: `nil`)
   """
   @spec generate(stream :: Enumerable.t(), opts :: keyword) :: Stream.t()
   def generate(enum, opts) do
     sitemap_url = Keyword.fetch!(opts, :sitemap_url)
+    gzip_enabled = Keyword.get(opts, :gzip, true)
+    name = Keyword.get(opts, :name)
 
     enum
     |> Stream.concat([:end])
     |> Stream.transform(nil, &reduce_url_to_sitemap/2)
-    |> Stream.transform(1, &reduce_file_to_name_and_body/2)
+    |> Stream.transform(1, &reduce_file_to_name_and_body(&1, &2, name, gzip_enabled))
     |> Stream.concat([:end])
-    |> Stream.transform(nil, &reduce_to_index(&1, &2, sitemap_url))
-    |> Stream.map(&gzip_body/1)
+    |> Stream.transform(nil, &reduce_to_index(&1, &2, sitemap_url, name, gzip_enabled))
+    |> Stream.map(&maybe_gzip_body(&1, gzip_enabled))
   end
 
   @doc """
@@ -40,11 +46,11 @@ defmodule Sitemapper do
 
   Accepts the following `Keyword` options in `opts`:
 
-  * `store`: (required) The module of the desired `Sitemapper.Store`,
-    such as `Sitemapper.S3Store`.
+  * `store` - The module of the desired `Sitemapper.Store`,
+    such as `Sitemapper.S3Store`. (required)
 
-  * `store_config`: (optional) A `Keyword` list with options for the
-    `Sitemapper.Store`.
+  * `store_config` -  A `Keyword` list with options for the
+    `Sitemapper.Store`. (optional, but usually required)
   """
   @spec persist(Enumerable.t(), keyword) :: Stream.t()
   def persist(enum, opts) do
@@ -102,34 +108,33 @@ defmodule Sitemapper do
     end
   end
 
-  defp reduce_file_to_name_and_body(%File{body: body}, counter) do
-    {[{sitemap_filename(counter), body}], counter + 1}
+  defp reduce_file_to_name_and_body(%File{body: body}, counter, name, gzip_enabled) do
+    {[{filename(name, gzip_enabled, counter), body}], counter + 1}
   end
 
-  defp gzip_body({filename, body}) do
+  defp maybe_gzip_body({filename, body}, true) do
     {filename, :zlib.gzip(body)}
   end
 
-  defp sitemap_filename(counter) do
-    str = Integer.to_string(counter)
-    "sitemap-" <> String.pad_leading(str, 5, "0") <> ".xml.gz"
+  defp maybe_gzip_body({filename, body}, false) do
+    {filename, body}
   end
 
-  defp reduce_to_index(:end, nil, _sitemap_url) do
+  defp reduce_to_index(:end, nil, _sitemap_url, _name, _gzip_enabled) do
     {[], nil}
   end
 
-  defp reduce_to_index(:end, index_file, _sitemap_url) do
+  defp reduce_to_index(:end, index_file, _sitemap_url, name, gzip_enabled) do
     done_file = IndexGenerator.finalize(index_file)
-    {filename, body} = index_file_to_data_and_name(done_file)
+    {filename, body} = index_file_to_data_and_name(done_file, name, gzip_enabled)
     {[{filename, body}], nil}
   end
 
-  defp reduce_to_index({filename, body}, nil, sitemap_url) do
-    reduce_to_index({filename, body}, IndexGenerator.new(), sitemap_url)
+  defp reduce_to_index({filename, body}, nil, sitemap_url, name, gzip_enabled) do
+    reduce_to_index({filename, body}, IndexGenerator.new(), sitemap_url, name, gzip_enabled)
   end
 
-  defp reduce_to_index({filename, body}, index_file, sitemap_url) do
+  defp reduce_to_index({filename, body}, index_file, sitemap_url, _name, _gzip_enabled) do
     reference = filename_to_sitemap_reference(filename, sitemap_url)
 
     case IndexGenerator.add_sitemap(index_file, reference) do
@@ -141,8 +146,8 @@ defmodule Sitemapper do
     end
   end
 
-  defp index_file_to_data_and_name(%File{body: body}) do
-    {"sitemap.xml.gz", body}
+  defp index_file_to_data_and_name(%File{body: body}, name, gzip_enabled) do
+    {filename(name, gzip_enabled), body}
   end
 
   defp filename_to_sitemap_reference(filename, sitemap_url) do
@@ -161,5 +166,27 @@ defmodule Sitemapper do
   defp join_uri_and_filename(%URI{path: path} = uri, filename) do
     path = Path.join(path, filename)
     URI.merge(uri, path)
+  end
+
+  defp filename(name, gzip, count \\ nil) do
+    prefix = ["sitemap", name] |> Enum.reject(&is_nil/1) |> Enum.join("-")
+
+    suffix =
+      case count do
+        nil ->
+          ""
+
+        c ->
+          str = Integer.to_string(c)
+          "-" <> String.pad_leading(str, 5, "0")
+      end
+
+    extension =
+      case gzip do
+        true -> ".xml.gz"
+        false -> ".xml"
+      end
+
+    prefix <> suffix <> extension
   end
 end

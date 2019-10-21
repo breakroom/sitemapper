@@ -5,7 +5,7 @@ defmodule Sitemapper.S3Store do
     bucket = Keyword.fetch!(config, :bucket)
 
     props = [
-      {:content_type, "application/x-gzip"},
+      {:content_type, content_type(filename)},
       {:cache_control, "must-revalidate"},
       {:acl, :public_read}
     ]
@@ -14,5 +14,13 @@ defmodule Sitemapper.S3Store do
     |> ExAws.request!()
 
     :ok
+  end
+
+  defp content_type(filename) do
+    if String.ends_with?(filename, ".gz") do
+      "application/x-gzip"
+    else
+      "application/xml"
+    end
   end
 end
