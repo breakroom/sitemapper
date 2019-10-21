@@ -67,9 +67,7 @@ end
 
 ## Todo
 
-- [ ] Support extended Sitemap properties, like images, video, etc.
-- [ ] Optionally disable gzip
-- [ ] Handle multiple indexes
+- Support extended Sitemap properties, like images, video, etc.
 
 ## Benchmarks
 
