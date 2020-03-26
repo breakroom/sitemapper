@@ -120,13 +120,17 @@ defmodule SitemapperTest do
   end
 
   test "generate and persist" do
+    store_path = File.cwd!() |> Path.join("test/store")
+    File.mkdir_p!(store_path)
+
     opts = [
       sitemap_url: "http://example.org/foo",
       store: Sitemapper.FileStore,
       store_config: [
-        path: File.cwd!() |> Path.join("test/store")
+        path: store_path
       ]
     ]
+
 
     elements =
       Stream.concat([1..50_002])
