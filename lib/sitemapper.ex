@@ -20,21 +20,24 @@ defmodule Sitemapper do
     `http://example.org/sitemap.xml` (required)
   * `gzip` - Sets whether the files are gzipped (default: `true`)
   * `name` - An optional suffix for the sitemap filename. e.g. If you
-     set to `news`, will produce `sitemap-news.xml.gz` and
-     `sitemap-news-00001.xml.gz` filenames. (default: `nil`)
+    set to `news`, will produce `sitemap-news.xml.gz` and
+    `sitemap-news-00001.xml.gz` filenames. (default: `nil`)
+  * `index_lastmod` - An optional Date/DateTime/NaiveDateTime for the lastmod
+    element in the index. (default: `Date.utc_today()`)
   """
   @spec generate(stream :: Enumerable.t(), opts :: keyword) :: Stream.t()
   def generate(enum, opts) do
     sitemap_url = Keyword.fetch!(opts, :sitemap_url)
     gzip_enabled = Keyword.get(opts, :gzip, true)
     name = Keyword.get(opts, :name)
+    index_lastmod = Keyword.get(opts, :index_lastmod, Date.utc_today())
 
     enum
     |> Stream.concat([:end])
     |> Stream.transform(nil, &reduce_url_to_sitemap/2)
     |> Stream.transform(1, &reduce_file_to_name_and_body(&1, &2, name, gzip_enabled))
     |> Stream.concat([:end])
-    |> Stream.transform(nil, &reduce_to_index(&1, &2, sitemap_url, name, gzip_enabled))
+    |> Stream.transform(nil, &reduce_to_index(&1, &2, sitemap_url, name, gzip_enabled, index_lastmod))
     |> Stream.map(&maybe_gzip_body(&1, gzip_enabled))
   end
 
@@ -120,22 +123,22 @@ defmodule Sitemapper do
     {filename, body}
   end
 
-  defp reduce_to_index(:end, nil, _sitemap_url, _name, _gzip_enabled) do
+  defp reduce_to_index(:end, nil, _sitemap_url, _name, _gzip_enabled, _lastmod) do
     {[], nil}
   end
 
-  defp reduce_to_index(:end, index_file, _sitemap_url, name, gzip_enabled) do
+  defp reduce_to_index(:end, index_file, _sitemap_url, name, gzip_enabled, _lastmod) do
     done_file = IndexGenerator.finalize(index_file)
     {filename, body} = index_file_to_data_and_name(done_file, name, gzip_enabled)
     {[{filename, body}], nil}
   end
 
-  defp reduce_to_index({filename, body}, nil, sitemap_url, name, gzip_enabled) do
-    reduce_to_index({filename, body}, IndexGenerator.new(), sitemap_url, name, gzip_enabled)
+  defp reduce_to_index({filename, body}, nil, sitemap_url, name, gzip_enabled, lastmod) do
+    reduce_to_index({filename, body}, IndexGenerator.new(), sitemap_url, name, gzip_enabled, lastmod)
   end
 
-  defp reduce_to_index({filename, body}, index_file, sitemap_url, _name, _gzip_enabled) do
-    reference = filename_to_sitemap_reference(filename, sitemap_url)
+  defp reduce_to_index({filename, body}, index_file, sitemap_url, _name, _gzip_enabled, lastmod) do
+    reference = filename_to_sitemap_reference(filename, sitemap_url, lastmod)
 
     case IndexGenerator.add_sitemap(index_file, reference) do
       {:error, reason} when reason in [:over_length, :over_count] ->
@@ -150,13 +153,13 @@ defmodule Sitemapper do
     {filename(name, gzip_enabled), body}
   end
 
-  defp filename_to_sitemap_reference(filename, sitemap_url) do
+  defp filename_to_sitemap_reference(filename, sitemap_url, lastmod) do
     loc =
       URI.parse(sitemap_url)
       |> join_uri_and_filename(filename)
       |> URI.to_string()
 
-    %SitemapReference{loc: loc}
+    %SitemapReference{loc: loc, lastmod: lastmod}
   end
 
   defp join_uri_and_filename(%URI{path: nil} = uri, filename) do
