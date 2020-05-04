@@ -35,9 +35,9 @@ defmodule SitemapperTest do
 
     assert Enum.count(elements) == 2
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml.gz"
-    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 505
+    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 561
     assert Enum.at(elements, 1) |> elem(0) == "sitemap.xml.gz"
-    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 177
+    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 229
   end
 
   test "generate with 50,000 URLs" do
@@ -54,9 +54,9 @@ defmodule SitemapperTest do
 
     assert Enum.count(elements) == 2
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml.gz"
-    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 127_957
+    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 128_046
     assert Enum.at(elements, 1) |> elem(0) == "sitemap.xml.gz"
-    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 177
+    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 229
   end
 
   test "generate with 50,001 URLs" do
@@ -87,7 +87,7 @@ defmodule SitemapperTest do
     elements =
       Stream.concat([1..100])
       |> Stream.map(fn i ->
-        %URL{loc: "http://example.com/#{i}"}
+        %URL{loc: "http://example.com/#{i}", lastmod: ~D[2020-01-01], priority: 0.5, changefreq: :hourly}
       end)
       |> Sitemapper.generate(opts)
 

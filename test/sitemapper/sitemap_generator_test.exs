@@ -13,10 +13,10 @@ defmodule Sitemapper.SitemapGeneratorTest do
       |> SitemapGenerator.finalize()
 
     assert count == 1
-    assert length == 155
+    assert length == 330
 
     assert IO.chardata_to_string(body) ==
-             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n  <loc>http://example.com</loc>\n</url>\n</urlset>\n"
+             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n  <loc>http://example.com</loc>\n</url>\n</urlset>\n"
 
     assert length == IO.iodata_length(body)
   end
@@ -54,7 +54,7 @@ defmodule Sitemapper.SitemapGeneratorTest do
 
     assert error == {:error, :over_length}
     assert count == 48735
-    assert length == 52_427_860
+    assert length == 52_428_035
     assert length == IO.iodata_length(body)
   end
 end

@@ -5,7 +5,7 @@ defmodule Sitemapper.SitemapGenerator do
   @max_count 50_000
 
   @dec "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-  @urlset_start "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+  @urlset_start "<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
   @urlset_end "</urlset>"
 
   @line_sep "\n"
@@ -51,17 +51,14 @@ defmodule Sitemapper.SitemapGenerator do
   defp url_element(%URL{} = url) do
     elements =
       [:loc, :lastmod, :changefreq, :priority]
-      |> Enum.reduce(%{}, fn k, acc ->
+      |> Enum.reduce([], fn k, acc ->
         case Map.get(url, k) do
           nil ->
             acc
 
           v ->
-            Map.put(acc, k, Encoder.encode(v))
+            acc ++ [{k, Encoder.encode(v)}]
         end
-      end)
-      |> Enum.map(fn {k, v} ->
-        XmlBuilder.element(k, v)
       end)
 
     XmlBuilder.element(:url, elements)

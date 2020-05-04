@@ -5,7 +5,7 @@ defmodule Sitemapper.IndexGenerator do
   @max_count 50_000
 
   @dec "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-  @index_start "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+  @index_start "<sitemapindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
   @index_end "</sitemapindex>"
 
   @line_sep "\n"
@@ -54,17 +54,14 @@ defmodule Sitemapper.IndexGenerator do
   defp sitemap_element(%SitemapReference{} = reference) do
     elements =
       [:loc, :lastmod]
-      |> Enum.reduce(%{}, fn k, acc ->
+      |> Enum.reduce([], fn k, acc ->
         case Map.get(reference, k) do
           nil ->
             acc
 
           v ->
-            Map.put(acc, k, Encoder.encode(v))
+            acc ++ [{k, Encoder.encode(v)}]
         end
-      end)
-      |> Enum.map(fn {k, v} ->
-        XmlBuilder.element(k, v)
       end)
 
     XmlBuilder.element(:sitemap, elements)
