@@ -11,7 +11,7 @@ It's designed to generate large sitemaps while maintaining a low memory profile.
 ```elixir
 def deps do
   [
-    {:sitemapper, "~> 0.2.0"}
+    {:sitemapper, "~> 0.4.0"}
   ]
 end
 ```
