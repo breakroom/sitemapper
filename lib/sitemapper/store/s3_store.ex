@@ -10,7 +10,7 @@ defmodule Sitemapper.S3Store do
       {:acl, :public_read}
     ]
 
-    ExAws.S3.put_object(bucket, filename, body, props)
+    ExAws.S3.put_object(bucket, key(filename, config), body, props)
     |> ExAws.request!()
 
     :ok
@@ -21,6 +21,13 @@ defmodule Sitemapper.S3Store do
       "application/x-gzip"
     else
       "application/xml"
+    end
+  end
+
+  defp key(filename, config) do
+    case Keyword.get(config, :path, nil) do
+      nil -> filename
+      path -> Path.join([path, filename])
     end
   end
 end
