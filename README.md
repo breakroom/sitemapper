@@ -67,6 +67,10 @@ end
   end
 ```
 
+To persist your sitemaps to the local file system, instead of Amazon S3, simply set the :store key to `Sitemapper.FileStore` and :store_config to [path:&nbsp;sitemap_folder_path].
+
+Note, finally, that the above `Stream` functions are lazy and do not have any immediate effect. The stream must be ultimately passed to an eager function, meaning either Stream.run/1 or one included in the `Enum` module.
+
 ## Todo
 
 - Support extended Sitemap properties, like images, video, etc.
