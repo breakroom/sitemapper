@@ -27,7 +27,7 @@ defmodule SitemapperTest do
         %URL{
           loc: "http://example.com/#{i}",
           priority: 0.5,
-          lastmod: ~U[2020-01-01 00:00:00Z],
+          lastmod: ~D[2020-01-01],
           changefreq: :hourly
         }
       end)
@@ -35,9 +35,13 @@ defmodule SitemapperTest do
 
     assert Enum.count(elements) == 2
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml.gz"
-    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 561
+    assert Enum.at(elements, 0) |> elem(1) |> unzip() == fixture_content("sitemap-100-urls.xml")
     assert Enum.at(elements, 1) |> elem(0) == "sitemap.xml.gz"
-    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 229
+
+    assert Enum.at(elements, 1) |> elem(1) |> unzip() ==
+             fixture_content("sitemap-index-with-one-file.xml")
+             |> with_todays_date()
+             |> with_a_gzip_file_extension()
   end
 
   test "generate with 50,000 URLs" do
@@ -54,9 +58,13 @@ defmodule SitemapperTest do
 
     assert Enum.count(elements) == 2
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml.gz"
-    assert Enum.at(elements, 0) |> elem(1) |> IO.iodata_length() == 128_046
+    assert Enum.at(elements, 0) |> elem(1) |> unzip() == fixture_content("sitemap-50000-urls.xml")
     assert Enum.at(elements, 1) |> elem(0) == "sitemap.xml.gz"
-    assert Enum.at(elements, 1) |> elem(1) |> IO.iodata_length() == 229
+
+    assert Enum.at(elements, 1) |> elem(1) |> unzip() ==
+             fixture_content("sitemap-index-with-one-file.xml")
+             |> with_todays_date()
+             |> with_a_gzip_file_extension()
   end
 
   test "generate with 50,001 URLs" do
@@ -87,18 +95,25 @@ defmodule SitemapperTest do
     elements =
       Stream.concat([1..100])
       |> Stream.map(fn i ->
-        %URL{loc: "http://example.com/#{i}", lastmod: ~D[2020-01-01], priority: 0.5, changefreq: :hourly}
+        %URL{
+          loc: "http://example.com/#{i}",
+          lastmod: ~D[2020-01-01],
+          priority: 0.5,
+          changefreq: :hourly
+        }
       end)
       |> Sitemapper.generate(opts)
 
-    sitemap_00001_contents = File.read!(Path.join(__DIR__, "fixtures/sitemap-00001.xml"))
-    sitemap_index_contents = File.read!(Path.join(__DIR__, "fixtures/sitemap.xml"))
-
     assert Enum.count(elements) == 2
     assert Enum.at(elements, 0) |> elem(0) == "sitemap-00001.xml"
-    assert Enum.at(elements, 0) |> elem(1) |> IO.chardata_to_string() == sitemap_00001_contents
+
+    assert Enum.at(elements, 0) |> elem(1) |> IO.chardata_to_string() ==
+             fixture_content("sitemap-100-urls.xml")
+
     assert Enum.at(elements, 1) |> elem(0) == "sitemap.xml"
-    assert Enum.at(elements, 1) |> elem(1) |> IO.chardata_to_string() == sitemap_index_contents
+
+    assert Enum.at(elements, 1) |> elem(1) |> IO.chardata_to_string() ==
+             fixture_content("sitemap-index-with-one-file.xml")
   end
 
   test "generate with an alternative name" do
@@ -131,7 +146,6 @@ defmodule SitemapperTest do
       ]
     ]
 
-
     elements =
       Stream.concat([1..50_002])
       |> Stream.map(fn i ->
@@ -141,5 +155,23 @@ defmodule SitemapperTest do
       |> Sitemapper.persist(opts)
 
     assert Enum.count(elements) == 3
+  end
+
+  defp unzip(data) do
+    :zlib.gunzip(data)
+  end
+
+  defp fixture_content(name) do
+    File.read!(Path.join([__DIR__, "fixtures", name]))
+  end
+
+  defp with_todays_date(str) do
+    today = Date.utc_today() |> Date.to_iso8601()
+
+    String.replace(str, "2020-01-01", today)
+  end
+
+  defp with_a_gzip_file_extension(str) do
+    String.replace(str, ".xml", ".xml.gz")
   end
 end
