@@ -37,7 +37,10 @@ defmodule Sitemapper do
     |> Stream.transform(nil, &reduce_url_to_sitemap/2)
     |> Stream.transform(1, &reduce_file_to_name_and_body(&1, &2, name, gzip_enabled))
     |> Stream.concat([:end])
-    |> Stream.transform(nil, &reduce_to_index(&1, &2, sitemap_url, name, gzip_enabled, index_lastmod))
+    |> Stream.transform(
+      nil,
+      &reduce_to_index(&1, &2, sitemap_url, name, gzip_enabled, index_lastmod)
+    )
     |> Stream.map(&maybe_gzip_body(&1, gzip_enabled))
   end
 
@@ -134,7 +137,14 @@ defmodule Sitemapper do
   end
 
   defp reduce_to_index({filename, body}, nil, sitemap_url, name, gzip_enabled, lastmod) do
-    reduce_to_index({filename, body}, IndexGenerator.new(), sitemap_url, name, gzip_enabled, lastmod)
+    reduce_to_index(
+      {filename, body},
+      IndexGenerator.new(),
+      sitemap_url,
+      name,
+      gzip_enabled,
+      lastmod
+    )
   end
 
   defp reduce_to_index({filename, body}, index_file, sitemap_url, _name, _gzip_enabled, lastmod) do
