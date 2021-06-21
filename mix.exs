@@ -39,7 +39,7 @@ defmodule Sitemapper.MixProject do
 
   defp deps do
     [
-      {:xml_builder, "~> 2.1.1"},
+      {:xml_builder, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0", optional: true},
       {:fast_sitemap, "~> 0.1.0", only: :bench},
       {:benchee, "~> 1.0", only: :bench},
