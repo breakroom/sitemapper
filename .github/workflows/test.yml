@@ -1,13 +1,65 @@
 on: [push, pull_request]
 
+# https://github.com/elixir-lang/elixir/blob/master/lib/elixir/pages/compatibility-and-deprecations.md#compatibility-between-elixir-and-erlangotp
 jobs:
-  test:
+  otp_24:
     runs-on: ubuntu-latest
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
     strategy:
       matrix:
-        otp: [21.3, 22.3, 23.1]
-        elixir: [1.9.4, 1.10.4, 1.11.0]
+        otp: ["24.x"]
+        elixir: ["1.11.x", "1.12.x"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix test
+
+  otp_23:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ["23.x"]
+        elixir: ["1.9.x", "1.10.x", "1.11.x", "1.12.x"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix test
+
+  otp_22:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ["22.x"]
+        elixir: ["1.9.x", "1.10.x", "1.11.x", "1.12.x"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix test
+
+  otp_21:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ["21.x"]
+        elixir: ["1.9.x", "1.10.x", "1.11.x"]
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
