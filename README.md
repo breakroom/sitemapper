@@ -37,6 +37,7 @@ end
     |> Sitemapper.generate(config)
     |> Sitemapper.persist(config)
     |> Sitemapper.ping(config)
+    |> Stream.run()
   end
 ```
 
@@ -63,6 +64,7 @@ end
       |> Sitemapper.generate(config)
       |> Sitemapper.persist(config)
       |> Sitemapper.ping(config)
+      |> Stream.run()
     end)
   end
 ```
@@ -78,7 +80,7 @@ To persist your sitemaps to the local file system, instead of Amazon S3, your co
 ]
 ```
 
-Note that `Sitemapper.ping/1` is eager and will execute the stream. If you don't want to ping your sitemap, you'll need to finish on `Stream.run/1` or `Enum.to_list/1` to execute the stream and return the result.
+Note that `Sitemapper.ping/1` is not eager and you'll need to finish on `Stream.run/1` or `Enum.to_list/1` to execute the stream and return the result.
 
 ## Todo
 
