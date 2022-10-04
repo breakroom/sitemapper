@@ -10,7 +10,7 @@ defmodule Sitemapper.MixProject do
       elixir: "~> 1.9",
       deps: deps(),
       name: "Sitemapper",
-      source_url: "https://github.com/tomtaylor/sitemapper",
+      source_url: "https://github.com/breakroom/sitemapper",
       description: "Stream based XML Sitemap generator",
       package: package(),
       docs: docs()
@@ -21,7 +21,7 @@ defmodule Sitemapper.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["Tom Taylor"],
-      links: %{"GitHub" => "https://github.com/tomtaylor/sitemapper"}
+      links: %{"GitHub" => "https://github.com/breakroom/sitemapper"}
     ]
   end
 
