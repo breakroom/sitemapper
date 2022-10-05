@@ -123,7 +123,7 @@ defmodule Sitemapper do
   end
 
   defp maybe_gzip_body({filename, body}, false) do
-    {filename, body}
+    {filename, IO.iodata_to_binary(body)}
   end
 
   defp reduce_to_index(:end, nil, _sitemap_url, _name, _gzip_enabled, _lastmod) do
