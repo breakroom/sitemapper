@@ -7,7 +7,7 @@ defmodule Sitemapper.MixProject do
     [
       app: :sitemapper,
       version: @version,
-      elixir: "~> 1.9",
+      elixir: "~> 1.11",
       deps: deps(),
       name: "Sitemapper",
       source_url: "https://github.com/breakroom/sitemapper",
