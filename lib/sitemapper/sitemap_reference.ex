@@ -1,4 +1,6 @@
 defmodule Sitemapper.SitemapReference do
+  @moduledoc false
+
   @enforce_keys [:loc]
   defstruct [:loc, :lastmod]
 

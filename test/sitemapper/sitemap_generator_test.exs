@@ -53,7 +53,7 @@ defmodule Sitemapper.SitemapGeneratorTest do
       end)
 
     assert error == {:error, :over_length}
-    assert count == 48735
+    assert count == 48_735
     assert length == 52_428_035
     assert length == IO.iodata_length(body)
   end
