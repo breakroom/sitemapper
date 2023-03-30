@@ -201,6 +201,7 @@ defmodule Sitemapper do
   defp prefix(name), do: "sitemap-#{name}"
 
   defp suffix(nil), do: ""
+
   defp suffix(count) do
     str = Integer.to_string(count)
     "-" <> String.pad_leading(str, 5, "0")

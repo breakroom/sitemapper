@@ -65,6 +65,7 @@ defmodule Sitemapper.IndexGenerator do
   end
 
   defp encode_element(elements, _key, nil), do: elements
+
   defp encode_element(elements, key, value) do
     elements ++ [{key, Encoder.encode(value)}]
   end
