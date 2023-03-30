@@ -1,4 +1,6 @@
-# 0.7.0
+# Changelog
+
+### 0.7.0
 
 - Always return files as binaries - previously, when gzip was disabled, file
   content was in the form of IO data, which `Sitemapper.S3Store` would choke on.

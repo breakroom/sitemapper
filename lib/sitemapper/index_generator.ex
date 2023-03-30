@@ -1,11 +1,14 @@
 defmodule Sitemapper.IndexGenerator do
+  @moduledoc false
+  # Generates indexes
+
   alias Sitemapper.{Encoder, File, SitemapReference}
 
   @max_length 52_428_800
   @max_count 50_000
 
-  @dec "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-  @index_start "<sitemapindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+  @dec ~S(<?xml version="1.0" encoding="UTF-8"?>)
+  @index_start ~S(<sitemapindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @index_end "</sitemapindex>"
 
   @line_sep "\n"
@@ -14,7 +17,7 @@ defmodule Sitemapper.IndexGenerator do
   @end_length String.length(@index_end) + @line_sep_length
   @max_length_offset @max_length - @end_length
 
-  def new() do
+  def new do
     body = [@dec, @line_sep, @index_start, @line_sep]
     length = IO.iodata_length(body)
     %File{count: 0, length: length, body: body}
@@ -25,7 +28,8 @@ defmodule Sitemapper.IndexGenerator do
         %SitemapReference{} = reference
       ) do
     element =
-      sitemap_element(reference)
+      reference
+      |> sitemap_element()
       |> XmlBuilder.generate()
 
     element_length = IO.iodata_length(element)
@@ -53,17 +57,15 @@ defmodule Sitemapper.IndexGenerator do
 
   defp sitemap_element(%SitemapReference{} = reference) do
     elements =
-      [:loc, :lastmod]
-      |> Enum.reduce([], fn k, acc ->
-        case Map.get(reference, k) do
-          nil ->
-            acc
-
-          v ->
-            acc ++ [{k, Encoder.encode(v)}]
-        end
-      end)
+      []
+      |> encode_element(:loc, reference.loc)
+      |> encode_element(:lastmod, reference.lastmod)
 
     XmlBuilder.element(:sitemap, elements)
+  end
+
+  defp encode_element(elements, _key, nil), do: elements
+  defp encode_element(elements, key, value) do
+    elements ++ [{key, Encoder.encode(value)}]
   end
 end

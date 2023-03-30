@@ -1,11 +1,13 @@
 defmodule Sitemapper.SitemapGenerator do
+  @moduledoc false
+
   alias Sitemapper.{Encoder, File, URL}
 
   @max_length 52_428_800
   @max_count 50_000
 
-  @dec "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-  @urlset_start "<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+  @dec ~S(<?xml version="1.0" encoding="UTF-8"?>)
+  @urlset_start ~S(<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @urlset_end "</urlset>"
 
   @line_sep "\n"
@@ -14,7 +16,7 @@ defmodule Sitemapper.SitemapGenerator do
   @end_length String.length(@urlset_end) + @line_sep_length
   @max_length_offset @max_length - @end_length
 
-  def new() do
+  def new do
     body = [@dec, @line_sep, @urlset_start, @line_sep]
     length = IO.iodata_length(body)
     %File{count: 0, length: length, body: body}
@@ -22,7 +24,8 @@ defmodule Sitemapper.SitemapGenerator do
 
   def add_url(%File{count: count, length: length, body: body}, %URL{} = url) do
     element =
-      url_element(url)
+      url
+      |> url_element()
       |> XmlBuilder.generate()
 
     element_length = IO.iodata_length(element)

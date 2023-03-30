@@ -1,4 +1,13 @@
 defmodule Sitemapper.S3Store do
+  @moduledoc """
+  S3 sitemap store implementation using ExAWS
+
+  ## Configuration
+
+  - `:bucket` (required) -- a bucket handle to save to
+  - `:path` -- a prefix path which is appended to the filename
+  - `:extra_props` -- a list of extra object properties
+  """
   @behaviour Sitemapper.Store
 
   def write(filename, body, config) do
@@ -8,9 +17,11 @@ defmodule Sitemapper.S3Store do
       {:content_type, content_type(filename)},
       {:cache_control, "must-revalidate"},
       {:acl, :public_read}
+      | Keyword.get(config, :extra_props, [])
     ]
 
-    ExAws.S3.put_object(bucket, key(filename, config), body, props)
+    bucket
+    |> ExAws.S3.put_object(key(filename, config), body, props)
     |> ExAws.request!()
 
     :ok
@@ -25,9 +36,9 @@ defmodule Sitemapper.S3Store do
   end
 
   defp key(filename, config) do
-    case Keyword.get(config, :path, nil) do
-      nil -> filename
-      path -> Path.join([path, filename])
+    case Keyword.fetch(config, :path) do
+      :error -> filename
+      {:ok, path} -> Path.join([path, filename])
     end
   end
 end

@@ -13,7 +13,7 @@ defmodule SitemapperTest do
       Stream.concat([])
       |> Sitemapper.generate(opts)
 
-    assert Enum.count(elements) == 0
+    assert Enum.empty?(elements)
   end
 
   test "generate with complex URLs" do
