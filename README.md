@@ -69,14 +69,15 @@ end
   end
 ```
 
-To persist your sitemaps to the local file system, instead of Amazon S3, your config should look like: 
+To persist your sitemaps to the local file system, instead of Amazon S3, your config should look like:
 
 ```elixir
 [
-  store: Sitemapper.FileStore, 
+  store: Sitemapper.FileStore,
   store_config: [
     path: sitemap_folder_path
-  ]
+  ],
+  sitemap_url: "http://yourdomain.com"
 ]
 ```
 
