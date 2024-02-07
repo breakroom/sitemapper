@@ -6,7 +6,7 @@ defmodule Sitemapper do
   memory profile. It can persist sitemaps to Amazon S3, disk or any
   other adapter you wish to write.
   """
-  alias Sitemapper.{File, IndexGenerator, Pinger, SitemapGenerator, SitemapReference}
+  alias Sitemapper.{File, IndexGenerator, SitemapGenerator, SitemapReference}
 
   @doc """
   Receives a `Stream` of `Sitemapper.URL` and returns a `Stream` of
@@ -69,34 +69,6 @@ defmodule Sitemapper do
 
     Stream.each(enum, fn {filename, body} ->
       :ok = store.write(filename, body, store_config)
-    end)
-  end
-
-  @doc """
-  Receives a `Stream` of `{filename, body}` tuples, takes the last
-  one (the index file), and pings Google and Bing with its URL.
-
-  ## Configuration:
-
-  * `:pinger_config` - The list of configuration for pinger. Available options are
-  `:urls` which is a list of urls to ping with `%s` which is substitued with
-  the sitemap url
-  """
-  @spec ping(Enumerable.t(), keyword) :: Enumerable.t()
-  def ping(enum, opts) do
-    sitemap_url = Keyword.fetch!(opts, :sitemap_url)
-    pinger_config = Keyword.get(opts, :pinger_config, [])
-    parsed_sitemap = URI.parse(sitemap_url)
-
-    enum
-    |> Stream.take(-1)
-    |> Stream.map(fn {filename, _body} ->
-      index_url =
-        parsed_sitemap
-        |> join_uri_and_filename(filename)
-        |> URI.to_string()
-
-      Pinger.ping(index_url, pinger_config)
     end)
   end
 
