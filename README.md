@@ -36,7 +36,6 @@ end
     end)
     |> Sitemapper.generate(config)
     |> Sitemapper.persist(config)
-    |> Sitemapper.ping(config)
     |> Stream.run()
   end
 ```
@@ -63,24 +62,23 @@ end
       end)
       |> Sitemapper.generate(config)
       |> Sitemapper.persist(config)
-      |> Sitemapper.ping(config)
       |> Stream.run()
     end)
   end
 ```
 
-To persist your sitemaps to the local file system, instead of Amazon S3, your config should look like: 
+To persist your sitemaps to the local file system, instead of Amazon S3, your config should look like:
 
 ```elixir
 [
-  store: Sitemapper.FileStore, 
+  store: Sitemapper.FileStore,
   store_config: [
     path: sitemap_folder_path
   ]
 ]
 ```
 
-Note that `Sitemapper.ping/1` is not eager and you'll need to finish on `Stream.run/1` or `Enum.to_list/1` to execute the stream and return the result.
+Note that you'll need to finish on `Stream.run/1` or `Enum.to_list/1` to execute the stream and return the result.
 
 ## Todo
 
