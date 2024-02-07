@@ -23,6 +23,7 @@ erl_crash.dump
 sitemapper-*.tar
 
 .elixir_ls
+.vscode
 test/store
 
 benchmarks
