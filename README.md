@@ -4,7 +4,7 @@
 
 Sitemapper is an Elixir library for generating [XML Sitemaps](https://www.sitemaps.org).
 
-It's designed to generate large sitemaps while maintaining a low memory profile. It can persist sitemaps to Amazon S3, disk or any other adapter you wish to write.
+It's designed to generate large sitemaps while maintaining a low memory profile. It can persist sitemaps to Amazon S3, GCP Storage, disk or any other adapter you wish to write.
 
 ## Installation
 
