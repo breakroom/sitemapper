@@ -52,6 +52,7 @@ defmodule Sitemapper.MixProject do
     [
       {:xml_builder, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0", optional: true},
+      {:google_api_storage, "~> 0.34", optional: true},
 
       # Bench
       {:fast_sitemap, "~> 0.1.0", only: :bench},
