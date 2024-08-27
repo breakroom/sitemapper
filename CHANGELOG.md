@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.8.1
+
+- Add support for storing sitemaps on GCP Storage, with `Sitmapper.GCPStorageStore`
+
 ### 0.8.0
 
 - Remove support for `Sitemapper.ping` as neither Google nor Bing support pinging sitemaps any more.
