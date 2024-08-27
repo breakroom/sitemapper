@@ -29,7 +29,7 @@ defmodule Sitemapper.MixProject do
       ],
       links: %{
         "GitHub" => "https://github.com/breakroom/sitemapper",
-        "Changelog" => "https://github.com/breakroom/sitemapper/blob/master/CHANGELOG.md"
+        "Changelog" => "https://github.com/breakroom/sitemapper/blob/main/CHANGELOG.md"
       }
     ]
   end
