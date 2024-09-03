@@ -1,44 +1,48 @@
-defmodule Sitemapper.S3Store do
-  @moduledoc """
-  S3 sitemap store implementation using ExAWS
+if Code.ensure_loaded?(ExAws.S3) do
+  defmodule Sitemapper.S3Store do
+    @moduledoc """
+    S3 sitemap store implementation using ExAWS.
 
-  ## Configuration
+    You'll need to include the [`ex_aws_s3`](https://hex.pm/packages/ex_aws_s3) dependency to use this.
 
-  - `:bucket` (required) -- a bucket handle to save to
-  - `:path` -- a prefix path which is appended to the filename
-  - `:extra_props` -- a list of extra object properties
-  """
-  @behaviour Sitemapper.Store
+    ## Configuration
 
-  def write(filename, body, config) do
-    bucket = Keyword.fetch!(config, :bucket)
+    - `:bucket` (required) -- a bucket handle to save to
+    - `:path` -- a prefix path which is appended to the filename
+    - `:extra_props` -- a list of extra object properties
+    """
+    @behaviour Sitemapper.Store
 
-    props = [
-      {:content_type, content_type(filename)},
-      {:cache_control, "must-revalidate"},
-      {:acl, :public_read}
-      | Keyword.get(config, :extra_props, [])
-    ]
+    def write(filename, body, config) do
+      bucket = Keyword.fetch!(config, :bucket)
 
-    bucket
-    |> ExAws.S3.put_object(key(filename, config), body, props)
-    |> ExAws.request!()
+      props = [
+        {:content_type, content_type(filename)},
+        {:cache_control, "must-revalidate"},
+        {:acl, :public_read}
+        | Keyword.get(config, :extra_props, [])
+      ]
 
-    :ok
-  end
+      bucket
+      |> ExAws.S3.put_object(key(filename, config), body, props)
+      |> ExAws.request!()
 
-  defp content_type(filename) do
-    if String.ends_with?(filename, ".gz") do
-      "application/x-gzip"
-    else
-      "application/xml"
+      :ok
     end
-  end
 
-  defp key(filename, config) do
-    case Keyword.fetch(config, :path) do
-      :error -> filename
-      {:ok, path} -> Path.join([path, filename])
+    defp content_type(filename) do
+      if String.ends_with?(filename, ".gz") do
+        "application/x-gzip"
+      else
+        "application/xml"
+      end
+    end
+
+    defp key(filename, config) do
+      case Keyword.fetch(config, :path) do
+        :error -> filename
+        {:ok, path} -> Path.join([path, filename])
+      end
     end
   end
 end
