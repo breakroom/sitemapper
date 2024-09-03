@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.9.0
+
+- Fixed compilation when `ex_aws_s3` or `google_api_storage` dependencies aren't available - you can now use Sitemapper without these dependencies in your project
+
 ### 0.8.1
 
 - Add support for storing sitemaps on GCP Storage, with `Sitmapper.GCPStorageStore`
