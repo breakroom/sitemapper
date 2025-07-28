@@ -13,10 +13,10 @@ defmodule Sitemapper.SitemapGeneratorTest do
       |> SitemapGenerator.finalize()
 
     assert count == 1
-    assert length == 392
+    assert length == 330
 
     assert IO.chardata_to_string(body) ==
-             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n<url>\n  <loc>http://example.com</loc>\n</url>\n</urlset>\n"
+             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n  <loc>http://example.com</loc>\n</url>\n</urlset>\n"
 
     assert length == IO.iodata_length(body)
   end
@@ -54,7 +54,7 @@ defmodule Sitemapper.SitemapGeneratorTest do
 
     assert error == {:error, :over_length}
     assert count == 48_735
-    assert length == 52_428_097
+    assert length == 52_428_035
     assert length == IO.iodata_length(body)
   end
 
@@ -115,5 +115,63 @@ defmodule Sitemapper.SitemapGeneratorTest do
     xml_string = IO.chardata_to_string(body)
     refute String.contains?(xml_string, "<image:image>")
     assert length == IO.iodata_length(body)
+  end
+
+  test "conditional image namespace - no images means no namespace" do
+    url = %URL{loc: "http://example.com"}
+
+    %File{body: body} =
+      SitemapGenerator.new()
+      |> SitemapGenerator.add_url(url)
+      |> SitemapGenerator.finalize()
+
+    xml_string = IO.chardata_to_string(body)
+    refute String.contains?(xml_string, "xmlns:image")
+    assert String.contains?(xml_string, "xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"")
+  end
+
+  test "conditional image namespace - images present means namespace added" do
+    url = %URL{
+      loc: "http://example.com",
+      images: [%{loc: "http://example.com/image.jpg"}]
+    }
+
+    %File{body: body} =
+      SitemapGenerator.new()
+      |> SitemapGenerator.add_url(url)
+      |> SitemapGenerator.finalize()
+
+    xml_string = IO.chardata_to_string(body)
+
+    assert String.contains?(
+             xml_string,
+             "xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\""
+           )
+
+    assert String.contains?(xml_string, "<image:image>")
+  end
+
+  test "conditional image namespace - mixed URLs add namespace when first image appears" do
+    url_no_images = %URL{loc: "http://example.com/page1"}
+
+    url_with_images = %URL{
+      loc: "http://example.com/page2",
+      images: [%{loc: "http://example.com/image.jpg"}]
+    }
+
+    %File{body: body} =
+      SitemapGenerator.new()
+      |> SitemapGenerator.add_url(url_no_images)
+      |> SitemapGenerator.add_url(url_with_images)
+      |> SitemapGenerator.finalize()
+
+    xml_string = IO.chardata_to_string(body)
+
+    assert String.contains?(
+             xml_string,
+             "xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\""
+           )
+
+    assert String.contains?(xml_string, "<image:image>")
   end
 end
