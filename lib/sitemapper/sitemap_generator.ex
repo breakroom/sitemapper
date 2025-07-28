@@ -7,7 +7,7 @@ defmodule Sitemapper.SitemapGenerator do
   @max_count 50_000
 
   @dec ~S(<?xml version="1.0" encoding="UTF-8"?>)
-  @urlset_start ~S(<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
+  @urlset_start ~S(<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">)
   @urlset_end "</urlset>"
 
   @line_sep "\n"
@@ -52,7 +52,7 @@ defmodule Sitemapper.SitemapGenerator do
   end
 
   defp url_element(%URL{} = url) do
-    elements =
+    basic_elements =
       [:loc, :lastmod, :changefreq, :priority]
       |> Enum.reduce([], fn k, acc ->
         case Map.get(url, k) do
@@ -64,6 +64,26 @@ defmodule Sitemapper.SitemapGenerator do
         end
       end)
 
-    XmlBuilder.element(:url, elements)
+    image_elements =
+      case Map.get(url, :images) do
+        nil ->
+          []
+
+        images when is_list(images) ->
+          images
+          |> Enum.take(1000)
+          |> Enum.map(&image_element/1)
+
+        _ ->
+          []
+      end
+
+    all_elements = basic_elements ++ image_elements
+
+    XmlBuilder.element(:url, all_elements)
+  end
+
+  defp image_element(%{loc: loc}) do
+    {"image:image", [{"image:loc", loc}]}
   end
 end

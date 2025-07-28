@@ -81,9 +81,48 @@ To persist your sitemaps to the local file system, instead of Amazon S3, your co
 
 Note that you'll need to finish on `Stream.run/1` or `Enum.to_list/1` to execute the stream and return the result.
 
+Sitemapper supports [Google's Image Sitemap specification](https://developers.google.com/search/docs/crawling-indexing/sitemaps/image-sitemaps). You can include images in your URLs like this:
+
+```elixir
+def generate_sitemap() do
+  config = [
+    store: Sitemapper.FileStore,
+    store_config: [path: "/path/to/sitemaps"],
+    sitemap_url: "http://yourdomain.com"
+  ]
+
+  [
+    %Sitemapper.URL{
+      loc: "http://example.com/page-1",
+      images: [
+        %{loc: "http://example.com/image1.jpg"},
+        %{loc: "http://example.com/image2.png"}
+      ]
+    },
+    %Sitemapper.URL{
+      loc: "http://example.com/page-2",
+      changefreq: :daily,
+      lastmod: Date.utc_today(),
+      images: [
+        %{loc: "http://example.com/gallery/photo1.jpg"},
+        %{loc: "http://example.com/gallery/photo2.jpg"}
+      ]
+    }
+  ]
+  |> Sitemapper.generate(config)
+  |> Sitemapper.persist(config)
+  |> Stream.run()
+end
+```
+
+Key features:
+- Each URL can contain up to 1,000 images (as per Google's specification)
+- Images can be hosted on different domains (if both are verified in Search Console)
+- The image namespace is automatically included in the sitemap XML
+
 ## Todo
 
-- Support extended Sitemap properties, like images, video, etc.
+- Support extended Sitemap properties, like video, etc.
 
 ## Benchmarks
 
