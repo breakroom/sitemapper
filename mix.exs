@@ -1,13 +1,13 @@
 defmodule Sitemapper.MixProject do
   use Mix.Project
 
-  @version "0.10.0"
+  @version "0.11.0"
 
   def project do
     [
       app: :sitemapper,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.14",
       deps: deps(),
       name: "Sitemapper",
       source_url: "https://github.com/breakroom/sitemapper",
